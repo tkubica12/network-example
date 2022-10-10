@@ -14,6 +14,7 @@ module "reg1" {
   rg_name                   = azurerm_resource_group.reg1.name
   name_prefix               = "reg1"
   range                     = "10.1.0.0/16"
+  p2s_vpn_range             = "10.1.254.0/24"
   onprem_ranges             = ["10.99.0.0/16"]
   onprem_vpn_ip             = azurerm_public_ip.onprem_vpn.ip_address
   enable_vpn                = true
@@ -27,9 +28,10 @@ module "reg2" {
   rg_name                   = azurerm_resource_group.reg2.name
   name_prefix               = "reg2"
   range                     = "10.2.0.0/16"
+  p2s_vpn_range             = "10.2.254.0/24"
   onprem_ranges             = ["10.99.0.0/16"]
   onprem_vpn_ip             = azurerm_public_ip.onprem_vpn.ip_address
   enable_vpn                = true
-  route_onprem_via_firewall = true
+  route_onprem_via_firewall = false
   spoke_count               = 2
 }

@@ -14,6 +14,10 @@ variable "range" {
   type = string
 }
 
+variable "p2s_vpn_range" {
+  type = string
+}
+
 variable "onprem_vpn_ip" {
   type = string
 }
