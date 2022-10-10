@@ -18,6 +18,10 @@ variable "onprem_vpn_ip" {
   type = string
 }
 
+variable "onprem_ranges" {
+  type = list(string)
+}
+
 variable "spoke_count" {
   type = number
 }
@@ -26,14 +30,6 @@ variable "enable_vpn" {
   type = bool
 }
 
-variable "bgp_asn" {
-  type = number
-}
-
-variable "bgp_peer_asn" {
-  type = number
-}
-
-variable "bgp_peer_ip" {
-  type = string
+variable "route_onprem_via_firewall" {
+  type = bool
 }

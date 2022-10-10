@@ -26,7 +26,7 @@ resource "azurerm_route_table" "main" {
   name                          = "${var.name_prefix}-rt"
   resource_group_name           = var.rg_name
   location                      = var.location
-  disable_bgp_route_propagation = true
+  disable_bgp_route_propagation = var.route_onprem_via_firewall
 
   route {
     name                   = "allToFirewall"

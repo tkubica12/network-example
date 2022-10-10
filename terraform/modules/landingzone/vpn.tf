@@ -17,7 +17,7 @@ resource "azurerm_virtual_network_gateway" "main" {
   type                = "Vpn"
   vpn_type            = "RouteBased"
   active_active       = false
-  enable_bgp          = true
+  enable_bgp          = false
   sku                 = "VpnGw1AZ"
   generation          = "Generation1"
 
@@ -26,10 +26,6 @@ resource "azurerm_virtual_network_gateway" "main" {
     public_ip_address_id          = azurerm_public_ip.vpn[0].id
     private_ip_address_allocation = "Dynamic"
     subnet_id                     = azurerm_subnet.gw.id
-  }
-
-  bgp_settings {
-    asn = var.bgp_asn
   }
 }
 
@@ -40,12 +36,7 @@ resource "azurerm_local_network_gateway" "main" {
   resource_group_name = var.rg_name
   location            = var.location
   gateway_address     = var.onprem_vpn_ip
-  address_space       = ["${var.bgp_peer_ip}/32"]
-
-  bgp_settings {
-    asn                 = var.bgp_peer_asn
-    bgp_peering_address = var.bgp_peer_ip
-  }
+  address_space       = var.onprem_ranges
 }
 
 // VPN connection
@@ -57,13 +48,13 @@ resource "azurerm_virtual_network_gateway_connection" "reg_to_onprem" {
   type                       = "IPsec"
   virtual_network_gateway_id = azurerm_virtual_network_gateway.main[0].id
   local_network_gateway_id   = azurerm_local_network_gateway.main[0].id
-  enable_bgp                 = true
+  enable_bgp                 = false
   shared_key                 = "Azure12345678"
 }
 
 // Send traffic from VPN to FW
 resource "azurerm_route_table" "vpn" {
-  count                         = var.enable_vpn ? 1 : 0
+  count                         = (var.enable_vpn && var.route_onprem_via_firewall) ? 1 : 0
   name                          = "${var.name_prefix}-vpn-rt"
   resource_group_name           = var.rg_name
   location                      = var.location
@@ -78,7 +69,7 @@ resource "azurerm_route_table" "vpn" {
 }
 
 resource "azurerm_subnet_route_table_association" "vpn" {
-  count          = var.enable_vpn ? 1 : 0
+  count          = (var.enable_vpn && var.route_onprem_via_firewall) ? 1 : 0
   subnet_id      = azurerm_subnet.gw.id
   route_table_id = azurerm_route_table.vpn[0].id
 }

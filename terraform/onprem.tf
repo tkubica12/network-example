@@ -43,7 +43,7 @@ resource "azurerm_virtual_network_gateway" "onprem_vpn" {
   type                = "Vpn"
   vpn_type            = "RouteBased"
   active_active       = false
-  enable_bgp          = true
+  enable_bgp          = false
   sku                 = "VpnGw1AZ"
   generation          = "Generation1"
 
@@ -53,10 +53,6 @@ resource "azurerm_virtual_network_gateway" "onprem_vpn" {
     private_ip_address_allocation = "Dynamic"
     subnet_id                     = azurerm_subnet.onprem_gw.id
   }
-
-  bgp_settings {
-    asn = 65099
-  }
 }
 
 // VPN - peers
@@ -65,15 +61,7 @@ resource "azurerm_local_network_gateway" "onprem_peer_reg1" {
   resource_group_name = azurerm_resource_group.onprem.name
   location            = azurerm_resource_group.onprem.location
   gateway_address     = module.reg1.vpn_ip
-
-  address_space = [
-    "${module.reg1.bgp_peer_ip}/32",
-    "10.2.0.0/16" # Backup route to reg2
-  ]
-  bgp_settings {
-    asn                 = 65001
-    bgp_peering_address = module.reg1.bgp_peer_ip
-  }
+  address_space       = ["10.1.0.0/16"]
 }
 
 resource "azurerm_local_network_gateway" "onprem_peer_reg2" {
@@ -81,16 +69,7 @@ resource "azurerm_local_network_gateway" "onprem_peer_reg2" {
   resource_group_name = azurerm_resource_group.onprem.name
   location            = azurerm_resource_group.onprem.location
   gateway_address     = module.reg2.vpn_ip
-
-  address_space = [
-    "${module.reg2.bgp_peer_ip}/32",
-    "10.1.0.0/16" # Backup route to reg1
-  ]
-
-  bgp_settings {
-    asn                 = 65002
-    bgp_peering_address = module.reg2.bgp_peer_ip
-  }
+  address_space       = ["10.2.0.0/16"]
 }
 
 // VPN connections
@@ -101,7 +80,7 @@ resource "azurerm_virtual_network_gateway_connection" "onprem_to_reg1" {
   type                       = "IPsec"
   virtual_network_gateway_id = azurerm_virtual_network_gateway.onprem_vpn.id
   local_network_gateway_id   = azurerm_local_network_gateway.onprem_peer_reg1.id
-  enable_bgp                 = true
+  enable_bgp                 = false
   shared_key                 = "Azure12345678"
 }
 
@@ -112,7 +91,7 @@ resource "azurerm_virtual_network_gateway_connection" "onprem_to_reg2" {
   type                       = "IPsec"
   virtual_network_gateway_id = azurerm_virtual_network_gateway.onprem_vpn.id
   local_network_gateway_id   = azurerm_local_network_gateway.onprem_peer_reg2.id
-  enable_bgp                 = true
+  enable_bgp                 = false
   shared_key                 = "Azure12345678"
 }
 

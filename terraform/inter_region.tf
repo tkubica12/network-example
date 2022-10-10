@@ -32,19 +32,9 @@ resource "azurerm_route_table" "reg1-fw" {
     next_hop_type  = "Internet"
   }
 
-  dynamic "route" {
-    for_each = module.reg2.spokes_ranges
-    content {
-      name                   = "otherRegion-${split("/",route.value[0])[0]}"
-      address_prefix         = route.value[0]
-      next_hop_type          = "VirtualAppliance"
-      next_hop_in_ip_address = module.reg2.fw_ip
-    }
-  } 
-
   route {
-    name                   = "onpremBackupViaReg2"
-    address_prefix         = "10.98.0.0/15"
+    name                   = "toReg2"
+    address_prefix         = "10.2.0.0/16"
     next_hop_type          = "VirtualAppliance"
     next_hop_in_ip_address = module.reg2.fw_ip
   }
@@ -62,21 +52,11 @@ resource "azurerm_route_table" "reg2-fw" {
     next_hop_type  = "Internet"
   }
 
-  dynamic "route" {
-    for_each = module.reg1.spokes_ranges
-    content {
-      name                   = "otherRegion-${split("/",route.value[0])[0]}"
-      address_prefix         = route.value[0]
-      next_hop_type          = "VirtualAppliance"
-      next_hop_in_ip_address = module.reg1.fw_ip
-    }
-  } 
-
   route {
-    name                   = "onpremBackupViaReg1"
-    address_prefix         = "10.98.0.0/15"
+    name                   = "toReg2"
+    address_prefix         = "10.2.0.0/16"
     next_hop_type          = "VirtualAppliance"
-    next_hop_in_ip_address = module.reg1.fw_ip
+    next_hop_in_ip_address = module.reg2.fw_ip
   }
 }
 
