@@ -17,3 +17,7 @@ output "fw_ip" {
 output "vpn_ip" {
   value = var.enable_vpn ? azurerm_public_ip.vpn[0].ip_address : ""
 }
+
+output "vpn_id" {
+  value = var.enable_vpn ? azurerm_virtual_network_gateway.main[0].id : ""
+}
